@@ -1,8 +1,14 @@
 const { Contact } = require("../../models");
-const { sendSuccessReq } = require("../../helpers");
+const { sendResponse } = require("../../helpers");
 
 const getAll = async (req, res) => {
-  const result = await Contact.find({});
-  sendSuccessReq(res, { result });
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const result = await Contact.find({ owner: req.user._id }, "", {
+    skip,
+    limit: +limit,
+  }).populate("owner", "_id email");
+  sendResponse({ res, data: { result } });
 };
 module.exports = getAll;
