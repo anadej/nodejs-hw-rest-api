@@ -1,9 +1,11 @@
 const { Contact } = require("../../models");
-const { sendSuccessReq } = require("../../helpers");
+const { sendResponse } = require("../../helpers");
 
 const add = async (req, res) => {
-  const result = await Contact.create(req.body);
-  sendSuccessReq(res, { result }, 201);
+  const newContact = { ...req.body, owner: req.user._id };
+  const result = await Contact.create(newContact);
+
+  sendResponse({ res, data: { result }, status: 201 });
 };
 
 module.exports = add;
