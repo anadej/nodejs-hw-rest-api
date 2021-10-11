@@ -2,6 +2,7 @@ const Joi = require("joi");
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { generate } = require("shortid");
 
 const userSchema = Schema(
   {
@@ -25,6 +26,14 @@ const userSchema = Schema(
       default: null,
     },
     avatarURL: String,
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -41,6 +50,10 @@ userSchema.methods.setDefaultAvatar = function (avatar) {
   this.avatarURL = avatar;
 };
 
+userSchema.methods.setVerifyToken = function (password) {
+  this.verifyToken = generate();
+};
+
 const { SECRET_KEY } = process.env;
 
 userSchema.methods.createToken = function () {
@@ -49,7 +62,6 @@ userSchema.methods.createToken = function () {
   };
   return jwt.sign(payload, SECRET_KEY, { expiresIn: "1h" });
 };
-
 const joiSchema = Joi.object({
   email: Joi.string()
     .email({
@@ -60,9 +72,14 @@ const joiSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const joiUserVerifySchema = Joi.object({
+  email: Joi.string().required(),
+});
+
 const User = model("user", userSchema);
 
 module.exports = {
   User,
   joiSchema,
+  joiUserVerifySchema,
 };

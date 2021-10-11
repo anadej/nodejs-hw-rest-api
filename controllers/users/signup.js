@@ -1,8 +1,10 @@
 const { User } = require("../../models");
-const { sendResponse } = require("../../helpers");
+const { sendResponse, sendEmail } = require("../../helpers");
+const emailVerify = require("../../tpl/emailVerify");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
+
   const result = await User.findOne({ email });
   if (result) {
     sendResponse({
@@ -16,9 +18,18 @@ const signup = async (req, res) => {
 
   const newUser = new User({ email });
   newUser.setPassword(password);
+  newUser.setVerifyToken();
   await newUser.save();
 
-  await User.create(newUser);
+  const { verifyToken } = await User.create(newUser);
+
+  const data = {
+    to: email,
+    subject: "Email verification",
+    html: emailVerify(verifyToken, email),
+  };
+
+  await sendEmail(data);
   sendResponse({
     res,
     status: 201,
@@ -26,6 +37,7 @@ const signup = async (req, res) => {
       message: "Registration success",
       email: newUser.email,
       subscription: newUser.subscription,
+      verifyToken,
     },
   });
 };
