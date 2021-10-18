@@ -13,7 +13,6 @@ const updateAvatar = async (req, res) => {
     await Jimp.read(tempStorage)
       .then((image) => image.cover(250, 250).write(tempStorage))
       .catch(console.log);
-
     const [avatarExtension] = originalname.split(".").reverse();
     const fileName = path.join(`user_avatar-image_${_id}.${avatarExtension}`);
 

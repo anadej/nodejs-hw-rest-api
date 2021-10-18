@@ -4,12 +4,12 @@ const { sendResponse } = require("../../helpers");
 const signin = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user || !user.comparePassword(password)) {
+  if (!user || !user.comparePassword(password) || !user.verify) {
     sendResponse({
       res,
       status: 401,
       statusMessage: "Unauthorized",
-      data: { message: "Email or password is wrong" },
+      data: { message: "Email or password is wrong or email is not verify" },
     });
     return;
   }
